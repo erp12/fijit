@@ -1,0 +1,14 @@
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/lib/
+/classes/
+/target/
+/checkouts/
+.nrepl-port
+.cpcache/
+
+# IntelliJ IDEA -  User-specific stuff
+.idea/
+*.iml
