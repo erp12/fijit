@@ -1,4 +1,4 @@
-# Fijit Guide
+# Guide to Fijit
 
 Clojure is a great language, but some people use Scala... and that's okay!
 

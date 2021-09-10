@@ -17,6 +17,7 @@ If you are inclinded to help with this effort, please see the [contributing guid
 ## Why the name "Fijit"?
 
 Clojure and Scala are both:
+
 - **F**unctional.
 - **I**mmutable-first.
 - **J**vm hosted (primarily).

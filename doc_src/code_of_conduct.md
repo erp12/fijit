@@ -1,5 +1,5 @@
 
-# Fijit Code of Conduct
+# Code of Conduct
 
 These community rules are put in place in order to ensure that development of Fijit stays
 focused and productive. 
