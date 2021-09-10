@@ -1,0 +1,1 @@
+Please read the Fijit [contributing guide](erp12.github.io/fijit/contributing.html) on the official Fijit page.

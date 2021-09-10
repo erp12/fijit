@@ -1,31 +1,24 @@
 # Fijit
 
-A Clojure library for Scala interop.
+Clojure is a great language, but some people use Scala... and that's okay!
 
-# Motivation
+Fijit is a Clojure library for interop with Scala. The goal of this project is to make it easier and more idiomatic to 
+use Scala projects from within your Clojure projects.
 
-Clojure and Scala are both:
-- **F**unctional.
-- **I**mmutable-first.
-- **J**vm hosted.
+## Documentation
 
-**Q:** Why `fijit`? **A:** Easier to call Scala projects. Spark and Akka.  
+Please see the [official documentation page](erp12.github.io/fijit/index.html) for more information on installation, usage, the API, and more.
 
-# Usage
+Quick Links:
+- [Guide and Overview](erp12.github.io/fijit/guide.html)
+- [API](erp12.github.io/fijit/index.html)
+- [Contributing](erp12.github.io/_fijit_/contributing.html)
 
-- Pin to git commit.
-- Provide your own scala version.
+# Todo before first release
 
-# Usage
-
-# Contributing
-
-# TODO:
-
-- Scala 2.13 support.
-- Refactor build from `fijit-2.12.1.jar` to `fijit_2.12-0.0.1.jar` 
-- Move test invocation to `build.clj` (including an entrypoint for testing all scala versions)
-- Write more tests and docstrings.
 - Write documentation guides.
   - How to add to deps.
-  - Contributing
+  - Native interop
+    - Calling object methods.
+    - Calling package object methods.
+    - Touching path dependent types.

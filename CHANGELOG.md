@@ -1,0 +1,1 @@
+The Fijit [changelog](erp12.github.io/fijit/changelog.html) can be found on the official Fijit page.

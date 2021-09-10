@@ -1,5 +1,4 @@
 (ns erp12.fijit.collection-test
-  (:refer-clojure :exclude [to-array])
   (:require [clojure.test :refer :all]
             [expectations.clojure.test :refer :all]
             [erp12.fijit.collection :refer :all])
@@ -16,23 +15,28 @@
   (testing "vector to clj"
     (let [a (->clj (scala-vector :a :b))]
       (is (vector? a))
-      (expect [:a :b] a)))
+      (expect [:a :b] a))
+    (expect [] (->clj (scala-vector))))
   (testing "set to clj"
     (let [a (->clj (scala-set :a :b))]
       (is (set? a))
-      (expect #{:a :b} a)))
+      (expect #{:a :b} a))
+    (expect #{} (->clj (scala-set))))
   (testing "map to clj"
     (let [a (->clj (scala-map :a 1 :b 2))]
       (is (map? a))
-      (expect {:a 1 :b 2} a)))
+      (expect {:a 1 :b 2} a))
+    (expect {} (->clj (scala-map))))
   (testing "list to clj"
     (let [a (->clj (scala-list :a :b))]
       (is (list? a))
-      (expect (list :a :b) a)))
+      (expect (list :a :b) a))
+    (expect [] (->clj (scala-list))))
   (testing "seq to clj"
     (let [a (->clj (scala-seq :a :b))]
       (is (seq? a))
-      (expect (list :a :b) a)))
+      (expect (list :a :b) a))
+    (expect '() (->clj (scala-seq))))
   (testing "iterator to clj"
     (let [a (->clj (scala-iter->ju-iter (.iterator (scala-seq :a :b))))]
       (is (instance? java.util.Iterator a))

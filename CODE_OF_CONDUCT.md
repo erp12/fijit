@@ -1,0 +1,1 @@
+Please read our [Code of Conduct](erp12.github.io/fijit/code_of_conduct.html) on the official Fijit page.

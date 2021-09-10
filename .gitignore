@@ -8,6 +8,8 @@ pom.xml.asc
 /checkouts/
 .nrepl-port
 .cpcache/
+.lsp/
+.eastwood
 
 # IntelliJ IDEA -  User-specific stuff
 .idea/

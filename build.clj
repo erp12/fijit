@@ -1,57 +1,63 @@
 (ns build
   (:require [clojure.tools.build.api :as b]
-            ;; Require s3-transporter to eliminate race condition
-            ;; https://ask.clojure.org/index.php/10905/control-transient-deps-that-compiled-assembled-into-uberjar?show=10913#c10913
-            [clojure.tools.deps.alpha.util.s3-transporter]))
+            [org.corfield.build :as bb]
+            [clojure.java.shell :refer [sh]]))
 
 (def lib 'io.github.erp12/fijit)
 
-(def class-dir "target/classes")
+(def lib-version (format "0.0.%s" (b/git-count-revs nil)))
+
+(defn tag
+  [scala-ver]
+  (format "%s-%s" (name scala-ver) lib-version))
 
 (defn jar-file
-  [v]
-  (format "target/%s-%s.jar" (name lib) v))
+  [scala-ver]
+  (format "target/%s_%s.jar" (name lib) (tag scala-ver)))
+
+(def scala-verions [:2.12 :2.13])
+
+;; Utils ;;;;;;;;;;
+
+(defn for-scala-versions
+  [opts f]
+   (doseq [scala-ver (if-let [v (:scala-version opts)]
+                       [v]
+                       scala-verions)]
+     (f (merge {:aliases [scala-ver]
+                :lib lib
+                :version lib-version
+                :jar-file (jar-file scala-ver)
+                :tag (tag scala-ver)}
+               opts))))
 
 ;; Entry ;;;;;;;;;;
 
-(defn clean
+(defn tests
+  [opts]
+  (for-scala-versions opts bb/run-tests))
+
+(defn jars
+  [opts]
+  (bb/clean opts)
+  (for-scala-versions opts bb/jar))
+
+(defn gen-docs
   [_]
-  (println "Cleaning...")
-  (b/delete {:path "target"}))
+  (println "Generating docs")
+  (let [{:keys [exit out err]} (sh "clj" "-X:2.13:codox")]
+    (println out)
+    (println err)
+    (when-not (zero? exit)
+      (System/exit exit))))
 
-(defn jar
-  [{:keys [scala-ver] :as params}]
-  (let [jar-basis (b/create-basis {:project "deps.edn"})
-        version (format "%s.%s" (name scala-ver) (b/git-count-revs nil))
-        jf (jar-file version)]
-    (println "Clearing" class-dir)
-    (b/delete {:path class-dir})
-    (println "Writing pom.xml...")
-    (b/write-pom {:class-dir class-dir
-                  :lib lib
-                  :version version
-                  :basis jar-basis
-                  :src-dirs ["src"]})
-    (println "Copying and compiling src...")
-    (b/copy-dir {:src-dirs ["src"]
-                 :target-dir class-dir})
-    (b/delete {:path (str class-dir "/erp12/fijit/function")})
-    (b/compile-clj {:basis (b/create-basis {:project "deps.edn"
-                                            :aliases [scala-ver]})
-                    :src-dirs ["src"]
-                    :class-dir class-dir
-                    :ns-compile ['erp12.fijit.function.Function0
-                                 'erp12.fijit.function.Function1
-                                 'erp12.fijit.function.Function2
-                                 'erp12.fijit.function.Function3
-                                 'erp12.fijit.function.util]})
-    (println (str "Building jar " jf "..."))
-    (b/jar {:class-dir class-dir
-            :jar-file jf})))
+(defn ci
+  "Run the CI pipeline. This runs tests and builds JARs for each Scala version."
+  [opts]
+  (tests opts)
+  (jars opts))
 
-(defn build-all
-      [_]
-      (clean nil)
-      (doseq [scala-ver [:2.12]]
-             (println "\nBuild @ Scala" scala-ver)
-             (jar {:scala-ver scala-ver})))
+(defn prepare-release
+  [opts]
+  (ci opts)
+  (gen-docs opts))

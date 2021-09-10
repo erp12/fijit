@@ -1,9 +1,14 @@
-(ns erp12.fijit.tuple
-  (:require [erp12.fijit.collection :as sc]
-            [clojure.core :as core])
+(ns ^{:doc "Utilities for creating and unpacking instances of scala's `Tuple*` classes."}
+  erp12.fijit.tuple
+  (:require [erp12.fijit.collection :as sc])
   (:import (scala Product)))
 
 (defn tuple
+  "Creates a Scala `Tuple` from the elements.
+
+  Scala uses a different `Tuple` class depending on the number of elements and thus the type of the returned value
+  will different depending on the number of arguments.
+  "
   ([a]
    (scala.Tuple1. a))
   ([a b]
@@ -52,9 +57,15 @@
                      {:count (+ 20 (count args))})))))
 
 (defn to-tuple
+  "Converts the collection to a scala Tuple.
+
+  Scala uses a different `Tuple` class depending on the number of elements and thus the type of the returned value
+  will different depending on the size of the collection.
+  "
   [coll]
   (apply tuple coll))
 
-(defn tuple->vec
-  [tup]
+(defn product->vec
+  "Converts a Scala `Product` type (for example, any instance of any `Tuple` class) to a Clojure vector."
+  [^Product tup]
   (->> tup .productIterator .toSeq sc/->clj vec))

@@ -1,39 +1,48 @@
-(ns erp12.fijit.collection
-  (:refer-clojure :exclude [to-array])
-  (:require [clojure.core :as core])
-  (:import (scala.collection.immutable List Set Vector Seq)
-           (scala.collection JavaConverters Map Iterator)
-           (scala Array)
+(ns  ^{:doc "Utilities for converting collections between Clojure and Scala."}
+  erp12.fijit.collection
+  (:require [clojure.core :as core]
+            [erp12.fijit.version :as sm])
+  (:import (scala Array)
+           (scala.collection Map Iterator)
+           (scala.collection.immutable List Set Vector Seq)
            (scala.reflect ClassTag)))
 
-; @todo Re-write this namespace so that it deligates properly based on scala version.
-; 2.12 --> scala.collection.JavaConverters
-; 2.13 --> scala.java.*
 
-(defn to-iterator
+(defn scala-iter->ju-iter
+  ^java.util.Iterator [^Iterator scala-iter]
+  (sm/by-scala-version :2.12 (scala.collection.JavaConverters/asJavaIterator scala-iter)
+                       :2.13 (.asJava (scala.jdk.CollectionConverters/IteratorHasAsJava scala-iter))))
+
+(defn ju-iter->scala-iter
+  ^Iterator [^java.util.Iterator ju-iter]
+  (sm/by-scala-version :2.12 (scala.collection.JavaConverters/asScalaIterator ju-iter)
+                       :2.13 (.asScala (scala.jdk.CollectionConverters/IteratorHasAsScala ju-iter))))
+
+
+(defn to-scala-iterator
   "Converts a Clojure collection to a Scala iterator."
   ^Iterator [coll]
-  (-> coll .iterator JavaConverters/asScalaIterator))
+  (-> coll .iterator (ju-iter->scala-iter)))
 
-(defn to-seq
+(defn to-scala-seq
   "Converts a Clojure collection to a Scala `Seq`."
   ^Seq [coll]
-  (-> coll to-iterator .toSeq))
+  (-> coll to-scala-iterator .toSeq))
 
-(defn to-list
+(defn to-scala-list
   "Converts a Clojure collection to a Scala `List`."
   ^List [coll]
-  (-> coll to-iterator .toList))
+  (-> coll to-scala-iterator .toList))
 
-(defn to-set
+(defn to-scala-set
   "Converts a Clojure collection to a Scala `Set`."
   ^Set [coll]
-  (-> coll to-iterator .toSet))
+  (-> coll to-scala-iterator .toSet))
 
-(defn to-vector
+(defn to-scala-vector
   "Converts a Clojure collection to a Scala `Vector`."
   ^Vector [coll]
-  (-> coll to-iterator .toVector))
+  (-> coll to-scala-iterator .toVector))
 
 (defn to-scala-array
   "Converts a Clojure collection to a Scala `Array`.
@@ -44,43 +53,48 @@
   ([coll]
    (to-scala-array (class (first (filter some? coll))) coll))
   ([^Class cls coll]
-   (.toArray (to-seq coll) (ClassTag/apply cls))))
+   (.toArray (to-scala-seq coll) (ClassTag/apply cls))))
 
-(defn to-map
+(defn to-scala-map
   "Converts a Clojure map to a Scala `Map`."
   ^Map [m]
-  (JavaConverters/mapAsScalaMap m))
+  (sm/by-scala-version :2.12 (scala.collection.JavaConverters/mapAsScalaMap m)
+                       :2.13 (.asScala (scala.jdk.CollectionConverters/MapHasAsScala m))))
 
 (defn scala-seq
   "Creates a Scala `Seq`."
   ^Seq [& args]
-  (to-seq args))
+  (to-scala-seq (if (nil? args) '() args)))
 
 (defn scala-list
   "Creates a Scala `List`."
   ^List [& args]
-  (to-list args))
+  (to-scala-list (if (nil? args) [] args)))
 
 (defn scala-set
   "Creates a Scala `Set`."
   ^Set [& args]
-  (to-set args))
+  (to-scala-set (if (nil? args) #{} args)))
 
 (defn scala-vector
   "Creates a Scala `Vector`."
   ^Vector [& args]
-  (to-vector args))
+  (to-scala-vector (if (nil? args) [] args)))
 
 (defn scala-map
   ^Map [& keyvals]
-  (to-map (apply array-map keyvals)))
+  (to-scala-map (apply array-map keyvals)))
+
+; @todo (defn scala-array [& args] ...)
 
 (defn seq->clj
   "Converts a Scala `Seq` to a clojure seq."
   [^Seq s]
-  (-> s
-      JavaConverters/asJavaIterable
-      core/seq))
+  (if (.isEmpty s)
+    '()
+    (-> (sm/by-scala-version :2.12 (scala.collection.JavaConverters/asJavaIterable s)
+                             :2.13 (.asJava (scala.jdk.CollectionConverters/SeqHasAsJava s)))
+        core/seq)))
 
 (defn vector->clj
   "Converts a Scala `Vector` to a clojure vector."
@@ -90,45 +104,38 @@
 (defn set->clj
   "Converts a Scala `Set` to a clojure set."
   [^Set s]
-  (-> s
-      JavaConverters/asJavaIterable
+  (-> (sm/by-scala-version :2.12 (scala.collection.JavaConverters/asJavaIterable s)
+                           :2.13 (.asJava (scala.jdk.CollectionConverters/SetHasAsJava s)))
       core/set))
 
 (defn map->clj
   "Converts a Scala `Map` to a clojure map."
   [^Map m]
-  (->> m
-       JavaConverters/mapAsJavaMap
+  (->> (sm/by-scala-version :2.12 (scala.collection.JavaConverters/mapAsJavaMap m)
+                            :2.13 (.asJava (scala.jdk.CollectionConverters/MapHasAsJava m)))
        (into {})))
 
-(defn scala-iter->ju-iter
-  ^java.util.Iterator [^Iterator scala-iter]
-  (JavaConverters/asJavaIterator scala-iter))
-
-(defn ju-iter->scala-iter
-  ^Iterator [^java.util.Iterator ju-iter]
-  (JavaConverters/asScalaIterator ju-iter))
 
 (defn ->clj
   "Converts a Scala collection to its Clojure counterpart.
-  Objects that are not supported immutable Scala collections
+  Objects that are not one of the supported immutable Scala collections
   are returned unchanged.
 
   Mapping:
-    Scala `ArrayLike` -> Clojure vector
-    Scala `Vector` -> Clojure vector
-    Scala `Set` -> Clojure set
-    Scala `Map` -> Clojure set
-    Scala `List` -> Clojure list
-    Scala `Seq` -> Clojure list
+
+    - Scala `Vector` -> Clojure vector
+    - Scala `Set` -> Clojure set
+    - Scala `Map` -> Clojure map
+    - Scala `List` -> Clojure list
+    - Scala `Seq` -> Clojure seq
+    - Scala `Iterator` -> Clojure seq
   "
   [x]
   (cond
-    (instance? Array x) x
     (instance? Vector x) (vector->clj x)
     (instance? Set x) (set->clj x)
     (instance? Map x) (map->clj x)
-    (instance? List x) (into (list) (reverse (seq->clj x)))  ;; @todo Is this too slow?
+    (instance? List x) (into (list) (reverse (seq->clj x))) ;; @todo Is this too slow?
     (instance? Seq x) (seq->clj x)
     (instance? Iterator x) (iterator-seq (scala-iter->ju-iter x))
     :else x))
@@ -138,17 +145,18 @@
   Non-collection inputs are returned unchanged.
 
   Mapping:
-    Clojure vector -> Scala `Vector`
-    Clojure set -> Scala `Set`
-    Clojure map -> Scala `Map`
-    Clojure `sequential?` -> Scala `Seq`
+
+    - Clojure vector -> Scala `Vector`
+    - Clojure set -> Scala `Set`
+    - Clojure map -> Scala `Map`
+    - Clojure `sequential?` -> Scala `Seq`
   "
   [x]
   (cond
-    (vector? x) (to-vector x)
-    (set? x) (to-set x)
-    (map? x) (to-map x)
-    (list? x) (to-list x)
+    (vector? x) (to-scala-vector x)
+    (set? x) (to-scala-set x)
+    (map? x) (to-scala-map x)
+    (list? x) (to-scala-list x)
     (instance? java.util.Iterator x) (ju-iter->scala-iter x)
-    (sequential? x) (to-seq x)
+    (sequential? x) (to-scala-seq x)
     :else x))
