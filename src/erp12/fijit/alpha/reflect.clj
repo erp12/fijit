@@ -1128,6 +1128,10 @@ This is used as a placeholder in the `self` parameter Template if there is no de
   [^Symbols$TypeSymbol symb]
   (.tpe symb))
 
+(defn info
+  [^Symbols$Symbol symb]
+  (.info symb))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Shared
 
@@ -1204,10 +1208,21 @@ This is used as a placeholder in the `self` parameter Template if there is no de
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Fijit
 
+(defn- param-symbols
+  [symb]
+  (->> symb
+       .asMethod
+       .paramLists
+       sc/->clj
+       (core/map sc/->clj)
+       flatten))
+
+;; @todo Somehow handle alternatives.
 (defn type-reflect
   "Reflect on a Scala type, returning a map with `:bases`, `:flags`, and `:members`.
-  Similar to `clojure.reflect/type-reflect` over Scala types, except that names are
-  represented as Scala reflect `Symbol` objects rather than Clojure symbols.
+  Inspired by `clojure.reflect/type-reflect` except for Scala types. Names are
+  represented as Scala reflect `Symbol` objects rather than Clojure symbols, and parameters
+  are represented as symbols rather than just their type.
 
     :bases            a set of symbols of the type's bases
     :flags            a set of keywords naming the boolean attributes of the type.
@@ -1220,12 +1235,9 @@ This is used as a placeholder in the `self` parameter Template if there is no de
     :declaring-class  Symbol of the declarer
     :flags            keyword naming boolean attributes of the member
 
-    Keys specific to constructors:
-    :parameter-types  vector of parameter type symbols
-
-    Key specific to methods:
-    :parameter-types  vector of parameter type symbols
-    :return-type      return type symbol
+    Keys specific to constructors and methods:
+    :parameters  vector of parameter symbols.
+    :return-type  return type symbol
 
     Keys specific to fields:
     :type             type name
@@ -1257,11 +1269,10 @@ This is used as a placeholder in the `self` parameter Template if there is no de
                                                                        (when (final? member-symb) :final)
                                                                        (when (synthetic? member-symb) :synthetic)]))}
                                  (cond
-                                   (constructor? member-symb) {:parameter-types nil} ;; @todo Finish
-                                   (method? member-symb) {:parameter-types nil ;; @todo Finish
-                                                          :return-type     nil} ;; @todo Finish
+                                   (method? member-symb) {:parameters (param-symbols member-symb)
+                                                          :return-type (.returnType (.asMethod member-symb))}
                                    (class? member-symb) {}  ;; @todo What should be put here? Recursive type-reflect?
-                                   (module? member-symb) {}
+                                   (module? member-symb) {} ;; @todo What should be put here? Recursive type-reflect?
                                    :else {:type nil})))))}))
 
 ;;;;;;;;;;;;
@@ -1269,16 +1280,7 @@ This is used as a placeholder in the `self` parameter Template if there is no de
 
 (comment
 
-
-
-  (let [tree (class-def {:name    (type-name "Box")
-                         :tparams [(type-def {:name (type-name "T")})]
-                         :impl    (template {:body [default-constructor
-                                                    (def-def {:name (term-name "boxed")
-                                                              :tpt  (ident (type-name "T"))
-                                                              :rhs  empty-tree})]})})]
-    (println (pr-raw tree {}))
-    (println (pr-code tree {})))
+  (type-reflect (scala-type scala.Option [Long]))
 
   )
 

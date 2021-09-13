@@ -75,9 +75,9 @@ version of Scala on the classpath."}
   For example the above code will
 
   - Return `:A` on Scala 2.12.0 through 2.13.9.
-  - Return`:B` for :2.12.10 and all other 2.12.x versions.
+  - Return `:B` for :2.12.10 and all other 2.12.x versions.
   - Throw and exception for scala 2.13.0 through 2.13.3.
-  - Return  `:C` for 2.13.4 and all other 2.13.x versions.
+  - Return `:C` for 2.13.4 and all other 2.13.x versions.
 
   "
   [& versions-and-forms]

@@ -10,8 +10,6 @@ instances can be called as normal Clojure functions."}
   (:import (java.io Serializable)
            (clojure.lang IFn)))
 
-;; @todo Document that wrapped functions also extend IFn and thus are valid Clojure functions.
-
 (deftype Function0 [f]
   scala.Function0
   (apply [_]

@@ -3,7 +3,7 @@
   (:require [erp12.fijit.collection :as sc])
   (:import (scala Product)))
 
-(defn tuple
+(defn scala-tuple
   "Creates a Scala `Tuple` from the elements.
 
   Scala uses a different `Tuple` class depending on the number of elements and thus the type of the returned value
@@ -63,7 +63,7 @@
   will different depending on the size of the collection.
   "
   [coll]
-  (apply tuple coll))
+  (apply scala-tuple coll))
 
 (defn product->vec
   "Converts a Scala `Product` type (for example, any instance of any `Tuple` class) to a Clojure vector."
