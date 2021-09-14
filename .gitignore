@@ -10,6 +10,7 @@ pom.xml.asc
 .cpcache/
 .lsp/
 .eastwood
+.clj-kondo/
 
 # IntelliJ IDEA -  User-specific stuff
 .idea/

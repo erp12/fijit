@@ -5,15 +5,9 @@
 
 (def lib 'io.github.erp12/fijit)
 
-(def lib-version (format "0.0.%s" (b/git-count-revs nil)))
+(def version (format "1.0.%s" (b/git-count-revs nil)))
 
-(defn tag
-  [scala-ver]
-  (format "%s-%s" (name scala-ver) lib-version))
-
-(defn jar-file
-  [scala-ver]
-  (format "target/%s_%s.jar" (name lib) (tag scala-ver)))
+(def jar-file (format "target/%s-%s.jar" (name lib) version))
 
 (def scala-verions [:2.12 :2.13])
 
@@ -21,15 +15,11 @@
 
 (defn for-scala-versions
   [opts f]
-   (doseq [scala-ver (if-let [v (:scala-version opts)]
-                       [v]
-                       scala-verions)]
-     (f (merge {:aliases [scala-ver]
-                :lib lib
-                :version lib-version
-                :jar-file (jar-file scala-ver)
-                :tag (tag scala-ver)}
-               opts))))
+  (doseq [scala-ver (if-let [v (:scala-version opts)]
+                      [v]
+                      scala-verions)]
+    (f (merge {:aliases [scala-ver]}
+              opts))))
 
 ;; Entry ;;;;;;;;;;
 
@@ -37,10 +27,12 @@
   [opts]
   (for-scala-versions opts bb/run-tests))
 
-(defn jars
+(defn jar
   [opts]
-  (bb/clean opts)
-  (for-scala-versions opts bb/jar))
+  (-> opts
+      (assoc :lib lib :version version)
+      (bb/clean)
+      (bb/jar)))
 
 (defn gen-docs
   [_]
@@ -52,10 +44,10 @@
       (System/exit exit))))
 
 (defn ci
-  "Run the CI pipeline. This runs tests and builds JARs for each Scala version."
+  "Run the CI pipeline. This runs tests for each Scala version and build the jar."
   [opts]
   (tests opts)
-  (jars opts))
+  (jar opts))
 
 (defn prepare-release
   [opts]

@@ -1,0 +1,23 @@
+name: Clojure CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '8', '16' ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: ${{ matrix.java }}
+          cache: 'maven'
+      - name: Clojure CLI
+        uses: DeLaGuardo/setup-clojure@master
+        with:
+          cli: '1.10.3.967'
+      - name: Run Tests
+        run: clojure -T:build ci
