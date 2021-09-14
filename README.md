@@ -15,10 +15,10 @@ use Scala projects from within your Clojure projects. Some key features include:
 
 ## Documentation
 
-Please see the [official documentation page](erp12.github.io/fijit/index.html) for more information on
+Please see the [official documentation page](https://erp12.github.io/fijit/) for more information on
 installation, usage, the API, and more.
 
 Quick Links:
-- [Guide and Overview](erp12.github.io/fijit/guide.html)
-- [API](erp12.github.io/fijit/index.html)
-- [Contributing](erp12.github.io/fijit/contributing.html)
+- [Guide and Overview](https://erp12.github.io/fijit/guide.html)
+- [API](https://erp12.github.io/fijit/index.html)
+- [Contributing](https://erp12.github.io/fijit/contributing.html)
