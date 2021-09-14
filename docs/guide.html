@@ -8,8 +8,7 @@
 <p>So what is the value of Fijit?</p>
 <p><strong>Fijit makes interop easier by providing an idiomatic Clojure API into Scala constructs that commonly appear in Scala interfaces.</strong></p>
 <p>In particular, Fijit was created to facilitate the development of idiomatic Clojure wrappers around the popular information processing frameworks that are available in Scala. For example, <a href="https://spark.apache.org/">Apache Spark</a> and <a href="https://akka.io/">Akka</a>. Clojure is a natural fit for these domains, but it can be difficult to leverage given the differences between Clojure and Scala (the host language of these frameworks). </p>
-<p>In addition, Fijit provides some useful macros that leverage Clojure’s compile-on-load architecture to help you write code that targets multiple Scala versions. Scala is famous for having an interesting relationship with binary incompatibility [1].</p>
-<p>is in a constant war with <a href="https://docs.scala-lang.org/overviews/core/binary-compatibility-for-library-authors.html">source and binary incompatibility</a> (which stands in stark contrast to Clojure :smile:) and it isn’t uncommon for Scala projects to stay change the upgrade Scala to the next</p>
+<p>In addition, Fijit provides some useful macros that leverage Clojure’s compile-on-load architecture to help you write code that targets multiple Scala versions. Scala is famous for having an interesting relationship with binary incompatibility [1] (which stands in stark contrast to Clojure :smile:) and it isn’t uncommon for  Scala projects to delay adding support for newer Scala versions for long periods of time. Fijit helps you  avoid these issues by allowing you to delegate to different implementations depending on which one is  supported by the version of Scala you are running.</p>
 <h2><a href="#installation" name="installation"></a>Installation</h2>
 <p>Fijit does not assume a specific Scala version, thus you must declare both Fijit and Scala as dependencies to your project. In particular, you need to depend on <code>scala-library</code>, <code>scala-reflect</code>, and <code>scala-compiler</code> all at the same version.</p>
 <p>If we wanted to build our project against Scala 2.13.6 we would specify the following dependencies:</p>
@@ -27,7 +26,7 @@
                                 org.scala-lang/scala-reflect  {:mvn/version "2.13.6"}
                                 org.scala-lang/scala-compiler {:mvn/version "2.13.6"}}}}}
 </code></pre>
-<p>We recommend declaring your fijit dependency with git coordinates. Future releases will likely also be published to Clojars.</p>
+<p>We recommend declaring your fijit dependency with git coordinates. Releases are also published to Clojars. See the <a href="https://clojars.org/io.github.erp12/fijit">fijit Clojars page</a> for more details. </p>
 <h2><a href="#usage-overview" name="usage-overview"></a>Usage Overview</h2>
 <p>The following sections will demonstrate some core features provided by fijit. For the complete API, see <a href="https://erp12.github.io/fijit/">the documentation site</a>.</p>
 <h3><a href="#collections" name="collections"></a>Collections</h3>
