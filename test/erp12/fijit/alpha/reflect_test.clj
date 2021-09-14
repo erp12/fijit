@@ -3,7 +3,8 @@
             [expectations.clojure.test :refer :all]
             [erp12.fijit.alpha.reflect :as r]
             [erp12.fijit.collection :as sc]
-            [erp12.fijit.version :as ver])
+            [erp12.fijit.version :as ver]
+            [clojure.set :as set])
   (:import (java.time LocalDate)
            (scala.collection.immutable Map Seq List)
            (scala.reflect ClassTag)))
@@ -24,8 +25,8 @@
     (expect "scala.collection.immutable.Map[java.lang.String,scala.collection.immutable.Seq[java.lang.Integer]]" (r/full-type-pr string->ints)))
   (testing "querying type"
     (testing "bases"
-      (expect '("class String" "trait CharSequence" "trait Comparable" "trait Serializable" "class Object" "class Any")
-              (map str (r/base-classes string)))
+      (is (set/subset? #{"class String" "trait CharSequence" "trait Comparable" "trait Serializable" "class Object" "class Any"}
+                       (set (map str (r/base-classes string)))))
       (expect (ver/by-scala-version :2.12 '("class Option" "trait Serializable" "trait Serializable" "trait Product" "trait Equals" "class Object" "class Any")
                                     :2.13 '("class Option" "trait Serializable" "trait Product" "trait Equals" "trait IterableOnce" "class Object" "class Any"))
               (map str (r/base-classes option-long))))
