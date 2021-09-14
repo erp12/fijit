@@ -23,11 +23,10 @@ Clojure and Scala (the host language of these frameworks).
 
 In addition, Fijit provides some useful macros that leverage Clojure's compile-on-load architecture to help you write
 code that targets multiple Scala versions. Scala is famous for having an interesting relationship with binary 
-incompatibility [1].
-
-is in a constant war with 
-[source and binary incompatibility](https://docs.scala-lang.org/overviews/core/binary-compatibility-for-library-authors.html)
-(which stands in stark contrast to Clojure :smile:) and it isn't uncommon for Scala projects to stay change the upgrade Scala to the next
+incompatibility [1] (which stands in stark contrast to Clojure :smile:) and it isn't uncommon for
+ Scala projects to delay adding support for newer Scala versions for long periods of time. Fijit helps you
+ avoid these issues by allowing you to delegate to different implementations depending on which one is
+ supported by the version of Scala you are running.
 
 ## Installation
 
@@ -57,8 +56,8 @@ and depend on fijit at the project level.
                                 org.scala-lang/scala-compiler {:mvn/version "2.13.6"}}}}}
 ```
 
-We recommend declaring your fijit dependency with git coordinates. Future releases will likely also be 
-published to Clojars.
+We recommend declaring your fijit dependency with git coordinates. Releases are also published to
+Clojars. See the [fijit Clojars page](https://clojars.org/io.github.erp12/fijit) for more details. 
 
 ## Usage Overview
 

@@ -2,6 +2,8 @@
 
 Clojure is a great language, but some people use Scala... and that's okay!
 
+[![Clojars Project](https://img.shields.io/clojars/v/io.github.erp12/fijit.svg)](https://clojars.org/io.github.erp12/fijit)
+
 Fijit is a Clojure library for interop with Scala. The goal of this project is to make it easier and more idiomatic to 
 use Scala projects from within your Clojure projects. Some key features include:
 

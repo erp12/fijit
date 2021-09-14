@@ -53,3 +53,10 @@
   [opts]
   (ci opts)
   (gen-docs opts))
+
+(defn publish
+  [opts]
+  (-> opts
+      (assoc :lib lib :version version)
+      (ci)
+      (bb/deploy)))
