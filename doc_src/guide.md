@@ -38,7 +38,7 @@ all at the same version.
 If we wanted to build our project against Scala 2.13.6 we would specify the following dependencies:
 
 ```clojure
-{:deps {io.github.erp12/fijit {???}
+{:deps {io.github.erp12/fijit {:git/tag "1.0.7" :git/sha "5009b4d"}
         org.scala-lang/scala-library  {:mvn/version "2.13.6"}
         org.scala-lang/scala-reflect  {:mvn/version "2.13.6"}
         org.scala-lang/scala-compiler {:mvn/version "2.13.6"}}}
@@ -48,7 +48,7 @@ If we wanted to target multiple versions of Scala, we would use an alias for eac
 and depend on fijit at the project level.
 
 ```clojure
-{:deps {io.github.erp12/fijit {???}}
+{:deps {io.github.erp12/fijit {:git/tag "1.0.7" :git/sha "5009b4d"}}
  :aliases {:2.12  {:extra-deps {org.scala-lang/scala-library  {:mvn/version "2.12.13"}
                                 org.scala-lang/scala-reflect  {:mvn/version "2.12.13"}
                                 org.scala-lang/scala-compiler {:mvn/version "2.12.13"}}}
