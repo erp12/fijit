@@ -13,13 +13,13 @@
 <h2><a href="#installation" name="installation"></a>Installation</h2>
 <p>Fijit does not assume a specific Scala version, thus you must declare both Fijit and Scala as dependencies to your project. In particular, you need to depend on <code>scala-library</code>, <code>scala-reflect</code>, and <code>scala-compiler</code> all at the same version.</p>
 <p>If we wanted to build our project against Scala 2.13.6 we would specify the following dependencies:</p>
-<pre><code class="clojure">{:deps {io.github.erp12/fijit {???}
+<pre><code class="clojure">{:deps {io.github.erp12/fijit {:git/tag "1.0.7" :git/sha "5009b4d"}
         org.scala-lang/scala-library  {:mvn/version "2.13.6"}
         org.scala-lang/scala-reflect  {:mvn/version "2.13.6"}
         org.scala-lang/scala-compiler {:mvn/version "2.13.6"}}}
 </code></pre>
 <p>If we wanted to target multiple versions of Scala, we would use an alias for each version, and depend on fijit at the project level.</p>
-<pre><code class="clojure">{:deps {io.github.erp12/fijit {???}}
+<pre><code class="clojure">{:deps {io.github.erp12/fijit {:git/tag "1.0.7" :git/sha "5009b4d"}}
  :aliases {:2.12  {:extra-deps {org.scala-lang/scala-library  {:mvn/version "2.12.13"}
                                 org.scala-lang/scala-reflect  {:mvn/version "2.12.13"}
                                 org.scala-lang/scala-compiler {:mvn/version "2.12.13"}}}
