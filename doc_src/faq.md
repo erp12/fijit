@@ -12,7 +12,7 @@ That said, fijit already leverages macros to delegate to different implementatio
 It is possible that a Scala 3 implementation is possible for the entire fijit API, it is possible that one day fijit
 could support Scala 3. 
 
-If you are inclined to help with this effort, please see the [contributing guide](erp12.github.io/fijit/contributing.html).
+If you are inclined to help with this effort, please see the [contributing guide](https://github.com/erp12/fijit/blob/master/CONTRIBUTING.md).
 
 ## Why the name "fijit"?
 
