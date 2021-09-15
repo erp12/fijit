@@ -1,4 +1,4 @@
-# Frequently Asked Questions
+# FAQ
 
 ## Will fijit ever support Scala 3?
 
@@ -21,6 +21,10 @@ Clojure and Scala are both:
 - **F**unctional.
 - **I**mmutable-first.
 - **J**vm hosted (primarily).
+
+[Cora Sutton](https://dev.to/corasaurus_hex) of [Clojure Morsels](https://www.clojuremorsels.com/)
+also noticed that "figit" is an inflection of the latin word "[figo](https://www.wordsense.eu/figit/)" which means "to fasten".
+A happy coincidence that I find too perfect to not write down.
 
 ## How to pronounce "fijit"?
 
