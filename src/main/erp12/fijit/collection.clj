@@ -1,8 +1,8 @@
-(ns  ^{:doc "Utilities for converting collections between Clojure and Scala."}
+(ns ^{:doc "Utilities for converting collections between Clojure and Scala."}
   erp12.fijit.collection
   (:require [clojure.core :as core]
             [erp12.fijit.version :as sm])
-  (:import (scala Array)
+  (:import (scala Array package$ Predef$ Tuple2 Array$)
            (scala.collection Map Iterator)
            (scala.collection.immutable List Set Vector Seq)
            (scala.reflect ClassTag)))
@@ -50,10 +50,8 @@
   Like Clojure core `into-array`, all elements must be of the same class (or nil).
   "
   ^Array
-  ([coll]
-   (to-scala-array (class (first (filter some? coll))) coll))
-  ([^Class cls coll]
-   (.toArray (to-scala-seq coll) (ClassTag/apply cls))))
+  [^Class cls coll]
+  (.toArray (to-scala-seq coll) (ClassTag/apply cls)))
 
 (defn to-scala-map
   "Converts a Clojure map to a Scala `Map`."
@@ -69,23 +67,31 @@
 (defn scala-list
   "Creates a Scala `List`."
   ^List [& args]
-  (to-scala-list (if (nil? args) [] args)))
+  (.apply (.List package$/MODULE$) (to-scala-seq (or args []))))
 
 (defn scala-set
   "Creates a Scala `Set`."
   ^Set [& args]
-  (to-scala-set (if (nil? args) #{} args)))
+  (.apply (.Set Predef$/MODULE$) (to-scala-seq (or args []))))
 
 (defn scala-vector
   "Creates a Scala `Vector`."
   ^Vector [& args]
-  (to-scala-vector (if (nil? args) [] args)))
+  (.apply (.Vector package$/MODULE$) (to-scala-seq (or args []))))
 
 (defn scala-map
   ^Map [& keyvals]
-  (to-scala-map (apply array-map keyvals)))
+  (->> keyvals
+       (apply array-map)
+       (map #(Tuple2. (first %) (second %)))
+       to-scala-seq
+       (.apply (.Map Predef$/MODULE$))))
 
-; @todo (defn scala-array [& args] ...)
+(defn scala-array
+  ^Array [^Class cls & args]
+  (.apply Array$/MODULE$
+          (to-scala-seq (or args []))
+          (ClassTag/apply cls)))
 
 (defn seq->clj
   "Converts a Scala `Seq` to a clojure seq."
@@ -115,7 +121,6 @@
                             :2.13 (.asJava (scala.jdk.CollectionConverters/MapHasAsJava m)))
        (into {})))
 
-
 (defn ->clj
   "Converts a Scala collection to its Clojure counterpart.
   Objects that are not one of the supported immutable Scala collections
@@ -132,11 +137,12 @@
   "
   [x]
   (cond
+    ;(instance? Array x) (vec x) ; Probably best to leave arrays as arrays and not assume a Clojure collection type.
     (instance? Vector x) (vector->clj x)
     (instance? Set x) (set->clj x)
     (instance? Map x) (map->clj x)
     (instance? List x) (into (list) (reverse (seq->clj x))) ;; @todo Is this too slow?
-    (instance? Seq x) (seq->clj x)
+    (instance? scala.collection.Seq x) (seq->clj x)
     (instance? Iterator x) (iterator-seq (scala-iter->ju-iter x))
     :else x))
 

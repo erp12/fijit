@@ -8,7 +8,7 @@
 
 (deftest ->clj-test
   (testing "array to clj"
-    (let [a (->clj (to-scala-array Keyword [:a :b]))]
+    (let [a (->clj (scala-array Keyword :a :b))]
       (expect "[Lclojure.lang.Keyword;"
               (.getName (class a)))
       (expect [:a :b] (vec a))))
