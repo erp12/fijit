@@ -12,6 +12,6 @@ pom.xml.asc
 .eastwood
 .clj-kondo/
 
-# IntelliJ IDEA -  User-specific stuff
+# IntelliJ IDEA - Developer specific stuff
 .idea/
 *.iml
