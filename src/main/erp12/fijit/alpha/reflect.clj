@@ -109,8 +109,9 @@ a symbol that references the defined entity.
             [clojure.string :as str]
             [erp12.fijit.collection :as sc]
             [erp12.fijit.option :as opt]
+            [erp12.fijit.version :as sm]
             [erp12.fijit.core :refer [unit]])
-  (:import (scala.reflect.api JavaUniverse TypeTags$TypeTag Mirrors$ClassMirror Mirrors$InstanceMirror Types$TypeApi Names$NameApi Symbols$SymbolApi Mirrors$MethodMirror Mirrors$FieldMirror Printers$BooleanFlag)
+  (:import (scala.reflect.api Universe JavaUniverse TypeTags$TypeTag Mirrors$ClassMirror Mirrors$InstanceMirror Types$TypeApi Names$NameApi Symbols$SymbolApi Mirrors$MethodMirror Mirrors$FieldMirror Printers$BooleanFlag)
            (scala.reflect.runtime JavaMirrors$JavaMirror)
            (scala.reflect.internal Types$Type Trees$Modifiers Names$TermName Trees$Template Trees$Tree Names$TypeName Names$Name Trees$ValDef Trees$RefTree Symbols$TypeSymbol Symbols$ClassSymbol Symbols$MethodSymbol Symbols$TermSymbol Symbols$Symbol Constants$Constant Trees$PackageDef Trees$ClassDef Trees$ModuleDef Trees$DefDef Trees$TypeDef Trees$LabelDef Trees$ImportSelector Trees$Block Trees$CaseDef Trees$Alternative Trees$Star Trees$Import Trees$Bind Trees$UnApply Trees$Function Trees$Assign Trees$If Trees$Annotated Trees$SingletonTypeTree Trees$SelectFromTypeTree Trees$CompoundTypeTree Trees$AppliedTypeTree Trees$TypeBoundsTree Trees$ExistentialTypeTree Trees$Literal Trees$Ident Trees$Select Trees$This Trees$Super Trees$Apply Trees$TypeApply Trees$Match Trees$Return Trees$Try Trees$Throw Trees$New Trees$Typed Trees$TypeTree Symbols$ModuleSymbol)
            (scala.reflect ClassTag)
@@ -120,7 +121,7 @@ a symbol that references the defined entity.
 ;; @todo Can we keep a global atom of type tags to make them "implicit"?
 
 (def ^{:doc "The runtime reflection universe."
-       :tag JavaUniverse}
+       :tag Universe}
   universe
   (.universe (scala.reflect.runtime.package$/MODULE$)))
 
@@ -132,7 +133,7 @@ a symbol that references the defined entity.
 (def ^{:doc "The reflective mirror of the universe. Used for loading Symbols by name, and as an entry point into invoker mirrors."
        :tag JavaMirrors$JavaMirror}
   mirror
-  (.runtimeMirror universe class-loader))
+  (.runtimeMirror ^JavaUniverse universe class-loader))
 
 (def ^{:doc "A toolbox that can be used to invoke the scala compiler."
        :tag scala.tools.reflect.ToolBox}
@@ -342,10 +343,10 @@ a symbol that references the defined entity.
   ([cls]
    (if (scala-type? cls)
      cls
-     (-> mirror (.staticClass (.getName cls)) .asClass .toType type-constructor)))
+     (-> mirror (.staticClass (.getName ^Class cls)) .asClass .toType type-constructor)))
   ([cls type-args]
    (-> universe
-       (.appliedType (scala-type cls)
+       (.appliedType ^Types$Type (scala-type cls)
                      (sc/to-scala-list (map scala-type type-args))))))
 
 (defn full-type-pr
@@ -648,7 +649,7 @@ a symbol that references the defined entity.
 (defn term-name?
   {:doc "Checks whether `nm` is a term name."
    :tag boolean}
-  [nm]
+  [^Names$NameApi nm]
   (if (not (instance? Names$NameApi nm))
     false
     (.isTermName nm)))
@@ -656,7 +657,7 @@ a symbol that references the defined entity.
 (defn type-name?
   {:doc "Checks whether `nm` is a type name."
    :tag boolean}
-  [nm]
+  [^Names$NameApi nm]
   (if (not (instance? Names$NameApi nm))
     false
     (.isTypeName nm)))
@@ -664,13 +665,13 @@ a symbol that references the defined entity.
 (defn to-term-name
   {:doc "Returns a term name that wraps the same string as the name `nm`."
    :tag Names$TermName}
-  [nm]
+  [^Names$NameApi nm]
   (.toTermName nm))
 
 (defn to-type-name
   {:doc "Returns a type name that wraps the same string as the name `nm`."
    :tag Names$TypeName}
-  [nm]
+  [^Names$NameApi nm]
   (.toTypeName nm))
 
 (defn decoded-name
@@ -682,7 +683,7 @@ a symbol that references the defined entity.
   ```
   "
    :tag Names$Name}
-  [nm]
+  [^Names$NameApi nm]
   (.decodedName nm))
 
 (defn encoded-name
@@ -693,7 +694,7 @@ a symbol that references the defined entity.
   (encoded-name (term-name \"!=\")) ; => (term-name \"$bang$eq\")
   ```"
    :tag Names$Name}
-  [nm]
+  [^Names$NameApi nm]
   (.encodedName nm))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -791,7 +792,8 @@ This is used as a placeholder in the `self` parameter Template if there is no de
 
 (defn named-arg
   [^Trees$Tree lhs ^Trees$Tree rhs]
-  (-> universe .NamedArg (.apply lhs rhs)))
+  (sm/by-scala-version :2.12 (-> universe .AssignOrNamedArg (.apply lhs rhs))
+                       :2.13 (-> universe .NamedArg (.apply lhs rhs))))
 
 (defn if
   ^Trees$If [^Trees$Tree cond ^Trees$Tree thenp ^Trees$Tree elsep]
@@ -978,7 +980,7 @@ This is used as a placeholder in the `self` parameter Template if there is no de
   The owner of the Scala `RootClass` and `RootPackage` is `NoSymbol`.
   Every other symbol has a chain of owners that ends in `RootClass`."
    :tag Symbols$Symbol}
-  [symb]
+  [^Symbols$Symbol symb]
   (.owner symb))
 
 (defn name
@@ -992,129 +994,129 @@ This is used as a placeholder in the `self` parameter Template if there is no de
 (defn full-name
   {:doc "The encoded full path name of the symbol, where outer names and inner names are separated by periods."
    :tag String}
-  [symb]
+  [^Symbols$Symbol symb]
   (.fullName symb))
 
 (defn method?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isMethod symb))
 
 (defn constructor?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isConstructor symb))
 
 (defn module?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isModule symb))
 
 (defn class?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isClass symb))
 
 (defn synthetic?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isSynthetic symb))
 
 (defn implementation-artifact?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isImplementationArtifact symb))
 
 (defn private-this?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isPrivateThis symb))
 
 (defn private?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isPrivate symb))
 
 (defn protected-this?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isProtectedThis symb))
 
 (defn protected?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isProtected symb))
 
 (defn public?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isPublic symb))
 
 (defn package?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isPackage symb))
 
 (defn static?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isStatic symb))
 
 (defn final?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isFinal symb))
 
 (defn abstract?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isAbstract symb))
 
 (defn abstract-override?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isAbstractOverride symb))
 
 (defn macro?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isMacro symb))
 
 (defn parameter?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isParameter symb))
 
 (defn specialized?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isSpecialized symb))
 
 (defn java?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isJava symb))
 
 (defn implicit?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isImplicit symb))
 
 (defn java-enum?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isJavaEnum symb))
 
 (defn java-annotation?
-  [symb]
+  [^Symbols$Symbol symb]
   (.isJavaAnnotation symb))
 
 (defn as-type
   {:doc "The symbol cast to a `TypeSymbol`."
    :tag Symbols$TypeSymbol}
-  [symb]
+  [^Symbols$Symbol symb]
   (.asType symb))
 
 (defn as-term
   {:doc "The symbol cast to a `TermSymbol`."
    :tag Symbols$TermSymbol}
-  [symb]
+  [^Symbols$Symbol symb]
   (.asTerm symb))
 
 (defn as-method
   {:doc "The symbol cast to a `MethodSymbol`."
    :tag Symbols$MethodSymbol}
-  [symb]
+  [^Symbols$Symbol symb]
   (.asMethod symb))
 
 (defn as-module
   {:doc "The symbol cast to a `ModuleSymbol` defined by an object definition."
    :tag Symbols$ModuleSymbol}
-  [symb]
+  [^Symbols$Symbol symb]
   (.asModule symb))
 
 (defn as-class
   {:doc "The symbol cast to a `ClassSymbol` representing a class or trait."
    :tag Symbols$ClassSymbol}
-  [symb]
+  [^Symbols$Symbol symb]
   (.asClass symb))
 
 (defn to-type
@@ -1139,15 +1141,17 @@ This is used as a placeholder in the `self` parameter Template if there is no de
   {:doc "Checks if the given `Symbol` or `Tree` is denoting a type."
    :tag Boolean}
   [symb-or-tree]
-  ;; Same implementation for `Symbol` and `Tree`.
-  (.isType symb-or-tree))
+  (if (instance? Symbols$Symbol symb-or-tree)
+    (.isType ^Symbols$Symbol symb-or-tree)
+    (.isType ^Trees$Tree symb-or-tree)))
 
 (defn term?
   {:doc "Checks if the given `Symbol` or `Tree` is denoting a term."
    :tag Boolean}
   [symb-or-tree]
-  ;; Same implementation for `Symbol` and `Tree`.
-  (.isTerm symb-or-tree))
+  (if (instance? Symbols$Symbol symb-or-tree)
+    (.isTerm ^Symbols$Symbol symb-or-tree)
+    (.isTerm ^Trees$Tree symb-or-tree)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Class Mirror
@@ -1209,7 +1213,7 @@ This is used as a placeholder in the `self` parameter Template if there is no de
 ;; Fijit
 
 (defn- param-symbols
-  [symb]
+  [^Symbols$Symbol symb]
   (->> symb
        .asMethod
        .paramLists
@@ -1270,7 +1274,7 @@ This is used as a placeholder in the `self` parameter Template if there is no de
                                                                        (when (synthetic? member-symb) :synthetic)]))}
                                  (cond
                                    (method? member-symb) {:parameters (param-symbols member-symb)
-                                                          :return-type (.returnType (.asMethod member-symb))}
+                                                          :return-type (.returnType (.asMethod ^Symbols$Symbol member-symb))}
                                    (class? member-symb) {}  ;; @todo What should be put here? Recursive type-reflect?
                                    (module? member-symb) {} ;; @todo What should be put here? Recursive type-reflect?
                                    :else {:type nil})))))}))

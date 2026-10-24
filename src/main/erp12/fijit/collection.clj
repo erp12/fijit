@@ -22,7 +22,12 @@
 (defn to-scala-iterator
   "Converts a Clojure collection to a Scala iterator."
   ^Iterator [coll]
-  (-> coll .iterator (ju-iter->scala-iter)))
+  (ju-iter->scala-iter
+    (cond
+      (instance? Iterable coll) (.iterator ^Iterable coll)
+      (instance? java.util.stream.BaseStream coll) (.iterator ^java.util.stream.BaseStream coll)
+      ;; Preserve support for any other object exposing an `iterator()` method.
+      :else (clojure.lang.Reflector/invokeNoArgInstanceMember coll "iterator" false))))
 
 (defn to-scala-seq
   "Converts a Clojure collection to a Scala `Seq`."

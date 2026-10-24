@@ -67,3 +67,15 @@
     (let [a (->scala (list :a :b))]
       (is (instance? Seq a))
       (expect (scala-seq :a :b) a))))
+
+(definterface HasIterator
+  (^java.util.Iterator iterator []))
+
+(deftest to-scala-list-test
+  (testing "from a Clojure collection"
+    (expect (scala-list :a :b) (to-scala-list [:a :b])))
+  (testing "from a Java stream, which has an iterator but is not Iterable"
+    (expect (scala-list :a :b) (to-scala-list (java.util.stream.Stream/of (object-array [:a :b])))))
+  (testing "from any other object with an iterator method"
+    (expect (scala-list :a :b) (to-scala-list (reify HasIterator
+                                                (iterator [_] (.iterator [:a :b])))))))
